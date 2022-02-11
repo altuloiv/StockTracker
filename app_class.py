@@ -2,6 +2,7 @@ import tkinter
 from tkinter import *
 import tkinter.messagebox
 from tkinter.ttk import *
+from database import *
 
 
 
@@ -10,7 +11,7 @@ class ParentWindow(Frame):
         Frame.__init__(self)
 
         self.master = master
-
+            ##automatically sets app screen to fit window of device##
         self.width_value=self.master.winfo_screenwidth()
         self.height_value=self.master.winfo_screenheight()
         self.master.geometry("%dx%d+0+0" % (self.width_value, self.height_value))
@@ -70,14 +71,22 @@ class ParentWindow(Frame):
         ### convert string values to a new variable ##
         stk = self.varStk.get()
         typ = self.varType.get()
+            ## changing quan and etrPr from string to integer and float values for multiplication ##
         quan = int(self.varQuan.get())
         entPr = float(self.varEnPr.get())
+            ## multiplying quan and entPr to give us the Position Size for database and submitted text ##
         posSize = quan * entPr
+            ## Clearing entered data and resetting drop down menu to buy once button is clicked ##
         self.txtStkTik.delete(0, END)
         self.txtpos_quan.delete(0, END)
         self.txtpos_price.delete(0, END)
         self.varType.set("Buy")
-        self.txtEntryType
+            ## setting variables into an array for easy submitting to database ##
+        array1 = [stk,typ,quan,entPr,posSize]
+            ## connecto to database and inserting array of variables into database ##
+        conn.executemany('INSERT INTO stocks(stock_ticker, entryType, pos_quan, entryPrice, pos_size) VALUES (?,?,?,?,?)', (array1,))
+        conn.commit()
+            ## pop up message displaying that commit of stock was completed ##
         tkinter.messagebox.showinfo("Trade Submitted.", "You submitted {} for {} order in amount of {} share at an entry price of ${} for a total Position Size of ${}".format(stk,typ,quan,entPr,posSize))
 
 
