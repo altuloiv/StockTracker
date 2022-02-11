@@ -1,13 +1,16 @@
 import sqlite3
 
-conn = sqlite3.connect('stocks')
+conn = sqlite3.connect('stocks.db')
 c = conn.cursor()
 
 c.execute('''
         CREATE TABLE IF NOT EXISTS stocks
-        ([stock_id] INTEGER PRIMARY KEY,
+        (
         [stock_ticker] TEXT NOT NULL,
-        [buy_price] INTEGER NOT NULL,
-        [buy_amount] INTEGER NOT NULL)
+        [entryType] TEXT NOT NULL,
+        [pos_quan] INTEGER NOT NULL,
+        [entryPrice] REAL NOT NULL,
+        [pos_size] REAL
+        )
         ''')
 conn.commit()
