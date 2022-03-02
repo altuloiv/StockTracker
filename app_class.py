@@ -1,99 +1,138 @@
-import tkinter
+import tkinter as tk
 from tkinter import *
 import tkinter.messagebox
 from tkinter.ttk import *
-from database import *
+from openPos import *
+from closedPos import *
+
+master = Tk()
+
+
+width_value=master.winfo_screenwidth()
+height_value=master.winfo_screenheight()
+master.geometry("%dx%d+0+0" % (width_value, height_value))
+
+frame =  Frame(master)
+
+varStk = StringVar()
+varType = StringVar()
+varType.set("Buy")
+varQuan = StringVar()
+varEnPr = StringVar()
 
 
 
-class ParentWindow(Frame):
-    def __init__(self, master):
-        Frame.__init__(self)
-
-        self.master = master
-            ##automatically sets app screen to fit window of device##
-        self.width_value=self.master.winfo_screenwidth()
-        self.height_value=self.master.winfo_screenheight()
-        self.master.geometry("%dx%d+0+0" % (self.width_value, self.height_value))
-
-        self.frame= Frame(self.master)
-        self.frame.grid(sticky="we")
-
-    
 
 
-        ### Setting Variables ###
-        self.varStk = StringVar()
-        self.varType = StringVar()
-            #Automatically sets entry type to buy#
-        self.varType.set("Buy")
-        self.varQuan = StringVar()
-        self.varEnPr = StringVar()
 
 
-        ###### Stock Ticker Entry & Title ######
-        self.stktik = Label(self.master, text= "Ticker:", font=("Helvetica", 16))
-        self.stktik.grid(row=4, column=1, padx=(30,0), pady=(30,0))
+        ##### Little function to clearly pull information from the database for active trades, seperating the proper information to the columns and rows #####
 
-        self.txtStkTik = Entry(self.master, text=self.varStk)
-        self.txtStkTik.grid(row=4, column=2, padx=(5,0), pady=(30,0))
+            
+def show():
+    stktik = Label(master, text="Ticker:", font=("Helvetica", 16))
+    stktik.grid(row=4, column=1, padx=(30,0), pady=(30,0))
 
-        ####### Entry Type & Title #####
-        self.entrytype = Label(self.master, text="Entry Type: ", font=("Helvetica", 16))
-        self.entrytype.grid(row=4, column=3, padx=(30,0), pady=(30,0))
+    txtStkTik = Entry(master, text=varStk)
+    txtStkTik.grid(row=4, column=2, padx=(5,0), pady=(30,0))
+
+####### Entry Type & Title #####
+    entrytype = Label(master, text="Entry Type: ", font=("Helvetica", 16))
+    entrytype.grid(row=4, column=3, padx=(30,0), pady=(30,0))
                 ### Drop Down Menu for Buy Type##
-        self.txtEntryType = OptionMenu(root,self.varType, "Buy","Short")
-        self.txtEntryType.grid(row=4, column=4, padx=(5,0), pady=(30,0))
+    txtEntryType = OptionMenu(master,varType, "Buy","Short")
+    txtEntryType.grid(row=4, column=4, padx=(5,0), pady=(30,0))
 
         ###### Position Quantity & Title ######
-        self.pos_quan = Label(self.master, text= "Position Quantity: ", font=("Helvetica", 16))
-        self.pos_quan.grid(row=4, column=5, padx=(30,0), pady=(30,0))
+    pos_quan = Label(master, text= "Position Quantity: ", font=("Helvetica", 16))
+    pos_quan.grid(row=4, column=5, padx=(30,0), pady=(30,0))
 
-        self.txtpos_quan = Entry(self.master, text=self.varQuan)
-        self.txtpos_quan.grid(row=4, column=6, padx=(5,0), pady=(30,0))
+    txtpos_quan = Entry(master, text=varQuan)
+    txtpos_quan.grid(row=4, column=6, padx=(5,0), pady=(30,0))
 
         #### Position Entry Price & Title #########
-        self.pos_price = Label(self.master, text= "Entry Price per Share: ", font=("Helvetica", 16))
-        self.pos_price.grid(row=4, column=7, padx=(30,0), pady=(30,0))
+    pos_price = Label(master, text= "Entry Price per Share: ", font=("Helvetica", 16))
+    pos_price.grid(row=4, column=7, padx=(30,0), pady=(30,0))
 
-        self.txtpos_price = Entry(self.master, text=self.varEnPr)
-        self.txtpos_price.grid(row=4, column=8, padx=(5,0), pady=(30,0))
+    txtpos_price = Entry(master, text=varEnPr)
+    txtpos_price.grid(row=4, column=8, padx=(5,0), pady=(30,0))
 
 
         ###### Submit Trade Button #######
 
-        self.btnSubmit = Button(self.master, text="Submit", width=10, command=self.submit)
-        self.btnSubmit.grid(row=5, column=2, padx=(0,90),pady=(30,0), sticky=NE)
+    btnSubmit = Button(master, text="Submit", width=10, command=lambda : submit())
+    btnSubmit.grid(row=4, column=9, padx=(30,90),pady=(30,0), sticky=NE)
+
+
+        ######### Table for Database Info #########
+
+    dataTicker = Label(master, text= "Ticker", font=("Helvetica", 14))
+    dataTicker.grid(row=5, column=1, padx=(30,0), pady=(5,0), columnspan=1)
+
+    dataType = Label(master, text= "Entry Type", font=("Helvetica", 14))
+    dataType.grid(row=5, column=2, padx=(30,0), pady=(5,0), columnspan=1)
+
+    dataQuan = Label(master, text= "Quantity", font=("Helvetica", 14))
+    dataQuan.grid(row=5, column=3, padx=(30,0), pady=(5,0), columnspan=1)
+
+    dataPrice = Label(master, text= "Price Per Share", font=("Helvetica", 14))
+    dataPrice.grid(row=5, column=4, padx=(30,0), pady=(5,0), columnspan=1)
+
+    dataSize = Label(master, text= "Total Pos Size", font=("Helvetica", 14))
+    dataSize.grid(row=5, column=5, padx=(30,0), pady=(5,0), columnspan=1)
+    
+    r_set=c.execute("SELECT * FROM openPositions")
+    i=6
+    for openPositions in r_set:
+        for j in range(len(openPositions)):
+            e = Label(master, width=10, text=(openPositions[j]), font=("Helvetica", 12))
+            e.grid(row=i, column = j + 1, padx=(70,0), pady=(5,0), columnspan=1)
+                    ### Close position button to populate for every trade ### 
+        e = Button(master, text="Close Position", width=30, command=lambda d=openPositions[0] : my_delete(d))
+        e.grid(row=i, column = 6, padx=(10,0), pady=(5,0), columnspan=3)
+            
+        i=i+1 # increments for each to next row
+    return(txtStkTik, txtEntryType,txtpos_quan,txtpos_price)
+
+
+
+def my_delete(id):
+    my_var=tkinter.messagebox.askyesnocancel("DELETE?", "Delete id:"+str(id),icon='warning',default="no")
+    if my_var:
+        r_set=c.execute("DELETE FROM openPositions WHERE s_id=" + str(id) )
+        for row in master.grid_slaves():
+            row.grid_forget()
+        conn.commit()
+        show()
+        tkinter.messagebox.showerror("Deleted ","No of records deleted=" +str(r_set.rowcount))
+    
 
 
     ### Function for when Button is Pressed ###    
-    def submit(self):
+def submit():
         ### convert string values to a new variable ##
-        stk = self.varStk.get()
-        typ = self.varType.get()
+    stk = varStk.get()
+    typ = varType.get()
             ## changing quan and etrPr from string to integer and float values for multiplication ##
-        quan = int(self.varQuan.get())
-        entPr = float(self.varEnPr.get())
+    quan = int(varQuan.get())
+    entPr = float(varEnPr.get())
             ## multiplying quan and entPr to give us the Position Size for database and submitted text ##
-        posSize = quan * entPr
+    posSize = quan * entPr
             ## Clearing entered data and resetting drop down menu to buy once button is clicked ##
-        self.txtStkTik.delete(0, END)
-        self.txtpos_quan.delete(0, END)
-        self.txtpos_price.delete(0, END)
-        self.varType.set("Buy")
+
+    varType.set("Buy")
             ## setting variables into an array for easy submitting to database ##
-        array1 = [stk,typ,quan,entPr,posSize]
+    array1 = [stk,typ,quan,entPr,posSize]
             ## connecto to database and inserting array of variables into database ##
-        conn.executemany('INSERT INTO stocks(stock_ticker, entryType, pos_quan, entryPrice, pos_size) VALUES (?,?,?,?,?)', (array1,))
-        conn.commit()
+    conn.executemany('INSERT INTO openPositions(stock_ticker, entryType, pos_quan, entryPrice, pos_size) VALUES (?,?,?,?,?)', (array1,))
+    conn.commit()
             ## pop up message displaying that commit of stock was completed ##
-        tkinter.messagebox.showinfo("Trade Submitted.", "You submitted {} for {} order in amount of {} share at an entry price of ${} for a total Position Size of ${}".format(stk,typ,quan,entPr,posSize))
+    tkinter.messagebox.showinfo("Trade Submitted.", "You submitted {} for {} order in amount of {} share at an entry price of ${} for a total Position Size of ${}".format(stk,typ,quan,entPr,posSize))
+
+            #### Copied over the function for writing the information on screen to auto populate info when clicking submit instead of refreshing the app ###
+    show()
+
+show()
 
 
-
-
-
-if __name__ == "__main__":
-    root = Tk()
-    App = ParentWindow(root)
-    root.mainloop()
+master.mainloop()
