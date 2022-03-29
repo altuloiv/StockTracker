@@ -12,7 +12,7 @@ cc.execute('''
         [entryPrice] REAL NOT NULL,
         [close_quan] INTEGER NOT NULL,
         [close_price] REAL NOT NULL,
-        [outcome] REAL NOT NULL
+        [outcome] FLOAT NOT NULL
         )
         ''')
 con.commit()
